@@ -1,6 +1,6 @@
 /obj/machinery/computer/HolodeckControl
 	name = "holodeck control computer"
-	desc = "A computer used to control a nearby holodeck."
+	desc = "Компьютер, используемый для управления ближайшим голодеком."
 	icon_keyboard = "tech_key"
 	icon_screen = "holocontrol"
 	var/area/linkedholodeck = null
@@ -457,7 +457,7 @@
 	..()
 	item_color = "red"
 
-/obj/item/holo/esword/hit_reaction(mob/living/carbon/human/owner, atom/movable/hitby, attack_text = "the attack", final_block_chance = 0, damage = 0, attack_type = MELEE_ATTACK)
+/obj/item/holo/esword/hit_reaction(mob/living/carbon/human/owner, atom/movable/hitby, attack_text = "the attack", final_block_chance = 0, damage = 0, attack_type = ITEM_ATTACK)
 	if(active)
 		return ..()
 	return 0

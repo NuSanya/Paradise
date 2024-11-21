@@ -103,11 +103,11 @@
 
 		if(ROLE_MALF_AI)
 			if(special_antag_amount)
-				var/datum/mind/special_antag = roundstart ? safepick(get_players_for_role(ROLE_MALF_AI, req_job_rank = JOB_TITLE_AI)) : safepick(antag_possibilities[ROLE_MALF_AI])
+				var/datum/mind/special_antag = safepick(antag_possibilities[ROLE_MALF_AI])
 				if(special_antag)
 					special_antag.restricted_roles = (restricted_jobs|protected_jobs|protected_jobs_AI)
 					special_antag.restricted_roles -= JOB_TITLE_AI
-					special_antag.special_role = SPECIAL_ROLE_TRAITOR
+					special_antag.special_role = SPECIAL_ROLE_MALFAI
 					SSjobs.new_malf = special_antag.current
 					pre_antags[special_antag] = ROLE_MALF_AI
 					antags_amount--
@@ -215,6 +215,7 @@
 	antag_possibilities[ROLE_CHANGELING] = get_players_for_role(ROLE_CHANGELING)
 	antag_possibilities[ROLE_TRAITOR] =	get_players_for_role(ROLE_TRAITOR)
 	antag_possibilities[ROLE_THIEF] = get_players_for_role(ROLE_THIEF, list(SPECIES_VOX = 4))
+	antag_possibilities[ROLE_MALF_AI] = get_players_for_role(ROLE_MALF_AI)
 
 	calculate_antags()
 
@@ -317,7 +318,7 @@
 					log_and_message_admins("[antag] was not assigned for AI role. Report this to coders.")
 
 			if(ROLE_VAMPIRE)
-				antag.add_antag_datum(/datum/antagonist/vampire)
+				antag.add_antag_datum(/datum/antagonist/vampire/new_vampire)
 			if(ROLE_CHANGELING)
 				antag.add_antag_datum(/datum/antagonist/changeling)
 			if(ROLE_TRAITOR)
@@ -330,7 +331,7 @@
 	for(var/datum/mind/antag as anything in pre_double_antags)
 		switch(pre_double_antags[antag])
 			if(ROLE_VAMPIRE)
-				antag.add_antag_datum(/datum/antagonist/vampire)
+				antag.add_antag_datum(/datum/antagonist/vampire/new_vampire)
 			if(ROLE_CHANGELING)
 				antag.add_antag_datum(/datum/antagonist/changeling)
 

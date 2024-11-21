@@ -906,7 +906,8 @@ GLOBAL_LIST_INIT(special_role_times, list( //minimum age (in days) for accounts 
 				html += "<del class='[color]'>[rank]</del></td><td><span class='btn btn-sm btn-danger text-light border border-secondary disabled' style='padding: 0px 4px;'><b> \[ЧЕРЕЗ [(available_in_days)] ДНЕЙ]</b></span></td></tr>"
 				continue
 			if(!job.character_old_enough(user.client))
-				html += "<del class='[color]'>[rank]</del></td><td><span class='btn btn-sm btn-danger text-light border border-secondary disabled' style='padding: 0px 4px;'><b> \[ВОЗРАСТ ОТ [(job.min_age_allowed)]]</b></span></td></tr>"
+				var/datum/species/current_species = GLOB.all_species[species]
+				html += "<del class='[color]'>[rank]</del></td><td><span class='btn btn-sm btn-danger text-light border border-secondary disabled' style='padding: 0px 4px;'><b> \[ВОЗРАСТ ОТ [get_age_limits(current_species, job.min_age_type)]</b></span></td></tr>"
 				continue
 			if(job.species_in_blacklist(user.client))
 				html += "<del class='[color]'>[rank]</del></td><td><span class='btn btn-sm btn-danger text-light border border-secondary disabled' style='padding: 0px 4px;'><b> \[НЕДОСТУПНО ДЛЯ ДАННОЙ РАСЫ]</b></span></td></tr>"
@@ -1542,7 +1543,7 @@ GLOBAL_LIST_INIT(special_role_times, list( //minimum age (in days) for accounts 
 					real_name = random_name(gender,species)
 					user.client << output(real_name, "title_browser:update_current_character")
 				if("age")
-					age = rand(AGE_MIN, AGE_MAX)
+					age = get_rand_age(S)
 				if("hair")
 					if(species in list(SPECIES_HUMAN, SPECIES_UNATHI, SPECIES_TAJARAN, SPECIES_SKRELL, SPECIES_MACNINEPERSON, SPECIES_WRYN, SPECIES_VULPKANIN, SPECIES_VOX))
 						h_colour = rand_hex_color()
@@ -1573,7 +1574,7 @@ GLOBAL_LIST_INIT(special_role_times, list( //minimum age (in days) for accounts 
 						m_colours["head"] = rand_hex_color()
 				if("m_style_body")
 					if(S.bodyflags & HAS_BODY_MARKINGS) //Species with body markings.
-						m_styles["body"] = random_marking_style("body", species)
+						m_styles["body"] = random_marking_style("body", species, gender = src.gender)
 				if("m_body_colour")
 					if(S.bodyflags & HAS_BODY_MARKINGS) //Species with body markings.
 						m_colours["body"] = rand_hex_color()
@@ -1619,10 +1620,11 @@ GLOBAL_LIST_INIT(special_role_times, list( //minimum age (in days) for accounts 
 							to_chat(user, "<font color='red'>Invalid name. Your name should be at least 2 and at most [MAX_NAME_LEN] characters long. It may only contain the characters A-Z, a-z, -, ' and .</font>")
 
 				if("age")
-					var/new_age = tgui_input_number(user, "Choose your character's age:\n([AGE_MIN]-[AGE_MAX])", "Character Preference", age, AGE_MAX, AGE_MIN)
+					var/list/age_list = get_age_limits(S, list(SPECIES_AGE_MIN, SPECIES_AGE_MAX))
+					var/new_age = tgui_input_number(user, "Choose your character's age:\n([age_list[SPECIES_AGE_MIN]]-[age_list[SPECIES_AGE_MAX]])", "Character Preference", age, age_list[SPECIES_AGE_MAX], age_list[SPECIES_AGE_MIN])
 					if(!new_age)
 						return
-					age = max(min(round(text2num(new_age)), AGE_MAX), AGE_MIN)
+					age = clamp(round(text2num(new_age)), age_list[SPECIES_AGE_MIN], age_list[SPECIES_AGE_MAX])
 				if("species")
 					var/list/new_species = list(SPECIES_HUMAN)
 					var/prev_species = species
@@ -1663,7 +1665,7 @@ GLOBAL_LIST_INIT(special_role_times, list( //minimum age (in days) for accounts 
 							m_colours["head"] = "#000000"
 
 						if(NS.bodyflags & HAS_BODY_MARKINGS) //Species with body markings/tattoos.
-							m_styles["body"] = random_marking_style("body", species)
+							m_styles["body"] = random_marking_style("body", species, gender = src.gender)
 						else
 							m_styles["body"] = "None"
 							m_colours["body"] = "#000000"
@@ -1696,6 +1698,7 @@ GLOBAL_LIST_INIT(special_role_times, list( //minimum age (in days) for accounts 
 						if(!(NS.bodyflags & HAS_SKIN_COLOR))
 							s_colour = "#000000"
 
+						age = get_rand_age(NS)
 						alt_head = "None" //No alt heads on species that don't have them.
 						speciesprefs = 0 //My Vox tank shouldn't change how my future Grey talks.
 						language = LANGUAGE_NONE
@@ -1758,7 +1761,7 @@ GLOBAL_LIST_INIT(special_role_times, list( //minimum age (in days) for accounts 
 						b_type = new_b_type
 
 				if("hair")
-					if(species in list(SPECIES_HUMAN, SPECIES_UNATHI, SPECIES_TAJARAN, SPECIES_SKRELL, SPECIES_MACNINEPERSON, SPECIES_VULPKANIN, SPECIES_VOX)) //Species that have hair. (No HAS_HAIR flag)
+					if(species in list(SPECIES_HUMAN, SPECIES_UNATHI, SPECIES_TAJARAN, SPECIES_SKRELL, SPECIES_MACNINEPERSON, SPECIES_VULPKANIN, SPECIES_VOX, SPECIES_WRYN)) //Species that have hair. (No HAS_HAIR flag)
 						var/input = "Choose your character's hair colour:"
 						var/new_hair = input(user, input, "Character Preference", h_colour) as color|null
 						if(new_hair)
@@ -1920,6 +1923,8 @@ GLOBAL_LIST_INIT(special_role_times, list( //minimum age (in days) for accounts 
 						valid_markings["None"] = GLOB.marking_styles_list["None"]
 						for(var/markingstyle in GLOB.marking_styles_list)
 							var/datum/sprite_accessory/M = GLOB.marking_styles_list[markingstyle]
+							if(gender == M.unsuitable_gender)
+								continue
 							if(!(species in M.species_allowed))
 								continue
 							if(M.marking_location != "body")
@@ -2010,9 +2015,7 @@ GLOBAL_LIST_INIT(special_role_times, list( //minimum age (in days) for accounts 
 						if(facialhairstyle == "Shaved") //Just in case.
 							valid_facial_hairstyles += facialhairstyle
 							continue
-						if(gender == MALE && SA.gender == FEMALE)
-							continue
-						if(gender == FEMALE && SA.gender == MALE)
+						if(gender == SA.unsuitable_gender)
 							continue
 						if(S.bodyflags & ALL_RPARTS) //Species that can use prosthetic heads.
 							var/head_model
@@ -2039,9 +2042,7 @@ GLOBAL_LIST_INIT(special_role_times, list( //minimum age (in days) for accounts 
 					var/list/valid_underwear = list()
 					for(var/underwear in GLOB.underwear_list)
 						var/datum/sprite_accessory/SA = GLOB.underwear_list[underwear]
-						if(gender == MALE && SA.gender == FEMALE)
-							continue
-						if(gender == FEMALE && SA.gender == MALE)
+						if(gender == SA.unsuitable_gender)
 							continue
 						if(!(species in SA.species_allowed))
 							continue
@@ -2061,9 +2062,7 @@ GLOBAL_LIST_INIT(special_role_times, list( //minimum age (in days) for accounts 
 					var/list/valid_undershirts = list()
 					for(var/undershirt in GLOB.undershirt_list)
 						var/datum/sprite_accessory/SA = GLOB.undershirt_list[undershirt]
-						if(gender == MALE && SA.gender == FEMALE)
-							continue
-						if(gender == FEMALE && SA.gender == MALE)
+						if(gender == MALE && SA.unsuitable_gender)
 							continue
 						if(!(species in SA.species_allowed))
 							continue
@@ -2083,9 +2082,7 @@ GLOBAL_LIST_INIT(special_role_times, list( //minimum age (in days) for accounts 
 					var/list/valid_sockstyles = list()
 					for(var/sockstyle in GLOB.socks_list)
 						var/datum/sprite_accessory/SA = GLOB.socks_list[sockstyle]
-						if(gender == MALE && SA.gender == FEMALE)
-							continue
-						if(gender == FEMALE && SA.gender == MALE)
+						if(gender == SA.unsuitable_gender)
 							continue
 						if(!(species in SA.species_allowed))
 							continue
@@ -2394,6 +2391,16 @@ GLOBAL_LIST_INIT(special_role_times, list( //minimum age (in days) for accounts 
 							gender = FEMALE
 						else
 							gender = MALE
+
+					var/datum/robolimb/robohead
+					if(S.bodyflags & ALL_RPARTS)
+						var/head_model = "[!rlimb_data["head"] ? "Morpheus Cyberkinetics" : rlimb_data["head"]]"
+						robohead = GLOB.all_robolimbs[head_model]
+
+					h_style = random_hair_style(gender, species, robohead)
+					f_style = random_facial_hair_style(gender, species, robohead)
+
+					m_styles["body"] = random_marking_style("body", species, gender = src.gender)
 					underwear = random_underwear(gender)
 
 				if("hear_adminhelps")

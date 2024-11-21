@@ -42,6 +42,8 @@
 	drop_sound = 'sound/items/handling/toolbelt_drop.ogg'
 	pickup_sound = 'sound/items/handling/toolbelt_pickup.ogg'
 	use_item_overlays = TRUE
+	max_combined_w_class = 15	// 6 `WEIGHT_CLASS_SMALL` items + RCD.
+	max_w_class = WEIGHT_CLASS_NORMAL
 	can_hold = list(
 		/obj/item/crowbar,
 		/obj/item/screwdriver,
@@ -57,7 +59,8 @@
 		/obj/item/holosign_creator,
 		/obj/item/radio,
 		/obj/item/robotanalyzer,
-		/obj/item/clothing/gloves)
+		/obj/item/clothing/gloves,
+		/obj/item/rcd)
 
 /obj/item/storage/belt/utility/full/populate_contents()
 	new /obj/item/screwdriver(src)
@@ -88,6 +91,8 @@
 	desc = "Holds tools, looks snazzy"
 	icon_state = "utilitybelt_ce"
 	item_state = "utility_ce"
+	storage_slots = 8
+	max_combined_w_class = 17	// 7 `WEIGHT_CLASS_SMALL` items + RCD.
 
 /obj/item/storage/belt/utility/chief/full/populate_contents()
 	new /obj/item/screwdriver/power(src)
@@ -687,11 +692,11 @@
 	storage_slots = 1
 	w_class = WEIGHT_CLASS_BULKY
 	max_w_class = WEIGHT_CLASS_BULKY
-	can_hold = list(/obj/item/melee/rapier)
+	can_hold = list(/obj/item/melee/rapier/captain)
 
 /obj/item/storage/belt/rapier/populate_contents()
-	new /obj/item/melee/rapier(src)
-	update_icon()
+	new /obj/item/melee/rapier/captain(src)
+	update_appearance(UPDATE_ICON_STATE)
 
 /obj/item/storage/belt/rapier/attack_hand(mob/user)
 	if(loc != user)
@@ -734,12 +739,22 @@
 	desc = "A sinister, thin sheath, suitable for a rapier."
 	icon_state = "syndie_sheath"
 	item_state = "syndie_sheath"
-	can_hold = list(/obj/item/melee/syndie_rapier)
+	can_hold = list(/obj/item/melee/rapier/syndie)
 
 /obj/item/storage/belt/rapier/syndie/populate_contents()
-	new /obj/item/melee/syndie_rapier(src)
-	update_icon()
+	new /obj/item/melee/rapier/syndie(src)
+	update_appearance(UPDATE_ICON_STATE)
 
+/obj/item/storage/belt/rapier/centcomm
+	name = "centcomm rapier sheath"
+	desc = "Украшенные ножны, корпоративный кич в комплекте."
+	icon_state = "centcomm_sheath"
+	item_state = "centcomm_sheath"
+	can_hold = list(/obj/item/melee/rapier/centcomm)
+
+/obj/item/storage/belt/rapier/centcomm/populate_contents()
+	new /obj/item/melee/rapier/centcomm(src)
+	update_appearance(UPDATE_ICON_STATE)
 
 // -------------------------------------
 //     Bluespace Belt

@@ -18,8 +18,13 @@ SUBSYSTEM_DEF(title)
 	import_html()
 	fill_title_images_pool()
 	current_title_screen = new(title_html = base_html, screen_image_file = pick_title_image())
-	show_title_screen_to_all_new_players()
+	if(!CONFIG_GET(flag/enable_titlescreen_lateload))
+		show_title_screen_to_all_new_players()
 	return SS_INIT_SUCCESS
+
+/datum/controller/subsystem/title/OnMasterLoad()
+	if(CONFIG_GET(flag/enable_titlescreen_lateload))
+		show_title_screen_to_all_new_players()
 
 /datum/controller/subsystem/title/Recover()
 	current_title_screen = SStitle.current_title_screen
@@ -117,6 +122,8 @@ SUBSYSTEM_DEF(title)
 	show_title_screen_to_all_new_players()
 
 /datum/controller/subsystem/title/proc/update_preview(client/viewer)
+	if(!viewer)
+		return
 	if(viewer.byond_version < 516)
 		viewer << output("", "title_browser:update_preview_515")
 	else
