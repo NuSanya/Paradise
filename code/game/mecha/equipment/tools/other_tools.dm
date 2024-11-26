@@ -592,7 +592,7 @@
 		W.fast_pressure_step_in = initial(W.fast_pressure_step_in)
 
 
-//SCS-3 CAGE
+// SCS-3 CAGE
 
 /obj/item/mecha_parts/mecha_equipment/cage
 	name = "SCS 3 Cage"
