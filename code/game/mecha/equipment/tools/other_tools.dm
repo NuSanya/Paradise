@@ -609,8 +609,10 @@
 	var/mob/living/carbon/prisoner
 	var/mob/living/carbon/holding
 	var/turf/holding_turf
-	var/datum/action/innate/mecha/select_module/button // for custom icons
-	var/current_alert //wacky case
+	/// for custom icons
+	var/datum/action/innate/mecha/select_module/button
+	/// wacky case
+	var/current_alert
 	var/obj/effect/supress/supress_effect
 
 /obj/item/mecha_parts/mecha_equipment/cage/can_attach(obj/mecha/M)
@@ -631,6 +633,10 @@
 		AM.forceMove(get_turf(src))
 		if(holding)
 			stop_supressing(holding)
+			
+	prisoner = null
+	holding = null
+	holding_turf = null
 	return ..()
 
 /obj/item/mecha_parts/mecha_equipment/cage/select_set_alert()
@@ -656,21 +662,37 @@
 	var/supress_check = target.IsStamcrited() || (target.health <= HEALTH_THRESHOLD_CRIT) || target.stat != CONSCIOUS
 
 	//SUPRESSING
-	if(holding && !same_target)
-		if(supress_check)
-			occupant_message(span_notice("You stop supressing [holding], and start supressing [target]..."))
-			chassis.visible_message(span_warning("[chassis] stops supressing [holding] and switches to [target]."))
-			stop_supressing(holding, FALSE)
-			set_supress_effect(target)
-			if(!do_after_cooldown(target))
-				qdel(supress_effect)
-				supress_effect = null
-				return FALSE
-			if(!prisoner)
-				change_alert("one")
-			supress(target)
-			return TRUE
-	if(!holding && supress_check)
+	if(((holding && !same_target) || !holding) && supress_check)
+		supress_action(target)
+		return TRUE
+
+	//HANDCUFFING
+	if(same_target && !target.handcuffed)
+		handcuff_action(target)
+		return TRUE
+
+	//PUTTING INTO MECH
+	if(same_target && target.handcuffed)
+		insert_action(target)
+		return TRUE
+
+	occupant_message(span_notice("[target] can't be suppressed, since [target] is not in critical condition"))
+	return FALSE
+
+/obj/item/mecha_parts/mecha_equipment/cage/proc/supress_action(mob/living/carbon/target)
+	if(!holding)
+		occupant_message(span_notice("You stop supressing [holding], and start supressing [target]..."))
+		chassis.visible_message(span_warning("[chassis] stops supressing [holding] and switches to [target]."))
+		stop_supressing(holding, FALSE)
+		set_supress_effect(target)
+		if(!do_after_cooldown(target))
+			qdel(supress_effect)
+			supress_effect = null
+			return FALSE
+		if(!prisoner)
+			change_alert("one")
+		supress(target)
+	else
 		occupant_message(span_notice("You start supressing [target]..."))
 		chassis.visible_message(span_warning("[chassis] starts supressing [target]."))
 		supress_effect = new(target.loc)
@@ -682,52 +704,44 @@
 		if(!prisoner)
 			change_alert("one")
 		supress(target)
-		return TRUE
 
-	//HANDCUFFING
-	if(same_target && !target.handcuffed)
-		occupant_message(span_notice("You start cuffing [target]..."))
-		chassis.visible_message(span_warning("[chassis] starts cuffing [target]."))
-		if(!do_after_cooldown(target))
+/obj/item/mecha_parts/mecha_equipment/cage/proc/handcuff_action(mob/living/carbon/target)
+	occupant_message(span_notice("You start cuffing [target]..."))
+	chassis.visible_message(span_warning("[chassis] starts cuffing [target]."))
+	if(!do_after_cooldown(target))
+		return FALSE
+	if(!prisoner)
+		change_alert("two")
+	target.apply_restraints(new /obj/item/restraints/handcuffs, ITEM_SLOT_HANDCUFFED, TRUE)
+	occupant_message(span_notice("You successfully cuff [target]..."))
+	chassis.visible_message(span_warning("[chassis] successfully cuffed [target]."))
+	add_attack_logs(chassis.occupant, target, "shackled")
+
+/obj/item/mecha_parts/mecha_equipment/cage/proc/insert_action(mob/living/carbon/target)
+	if(!prisoner_insertion_check(target))
 			return FALSE
-		if(!prisoner)
-			change_alert("two")
-		target.apply_restraints(new /obj/item/restraints/handcuffs, ITEM_SLOT_HANDCUFFED, TRUE)
-		occupant_message(span_notice("You successfully cuff [target]..."))
-		chassis.visible_message(span_warning("[chassis] successfully cuffed [target]."))
-		add_attack_logs(chassis.occupant, target, "shackled")
-		return TRUE
+	//since we are only using change_state here and in processing, might as well do it here
+	if(!button)
+		for(var/datum/action/innate/mecha/select_module/H in chassis.occupant.actions)
+			if(H.button_icon_state == "mecha_cage")
+				button = H
+				break
 
-	//PUTTING INTO MECH
-	if(same_target && target.handcuffed)
-		if(!prisoner_insertion_check(target))
-			return FALSE
-		//since we are only using change_state here and in processing, might as well do it here
-		if(!button)
-			for(var/datum/action/innate/mecha/select_module/H in chassis.occupant.actions)
-				if(H.button_icon_state == "mecha_cage")
-					button = H
-					break
-
-		change_state("mecha_cage_activate")
-		occupant_message(span_notice("Yoeu start putting [target] into the containment chamber..."))
-		chassis.visible_message(span_warning("[chassis] is putting [target] into the containment chamber."))
-		if(!do_after_cooldown(target))
-			change_state("mecha_cage")
-			return FALSE
-		change_state("mecha_cage_activated")
-		change_alert("three")
-		target.forceMove(src)
-		prisoner = target
-		stop_supressing(target)
-		update_equip_info()
-		occupant_message(span_notice("[target] successfully loaded into [src]."))
-		chassis.visible_message(span_warning("[chassis] loads [target] into [src]."))
-		log_message("[target] loaded.")
-		return TRUE
-
-	occupant_message(span_notice("[target] can't be suppressed, since [target] is not in critical condition"))
-	return FALSE
+	change_state("mecha_cage_activate")
+	occupant_message(span_notice("Yoeu start putting [target] into the containment chamber..."))
+	chassis.visible_message(span_warning("[chassis] is putting [target] into the containment chamber."))
+	if(!do_after_cooldown(target))
+		change_state("mecha_cage")
+		return FALSE
+	change_state("mecha_cage_activated")
+	change_alert("three")
+	target.forceMove(src)
+	prisoner = target
+	stop_supressing(target)
+	update_equip_info()
+	occupant_message(span_notice("[target] successfully loaded into [src]."))
+	chassis.visible_message(span_warning("[chassis] loads [target] into [src]."))
+	log_message("[target] loaded.")
 
 /obj/item/mecha_parts/mecha_equipment/cage/proc/supress(mob/living/carbon/target)
 	holding = target
