@@ -567,9 +567,9 @@ so as to remain in compliance with the most up-to-date laws."
 	name = ""
 	desc = ""
 
-//MECH MODULES
+// MECH MODULES
 
-//cage module
+// cage module
 /atom/movable/screen/alert/mech_cage
 	name = "You shouldn't see this"
 	desc = "This as well"
