@@ -719,7 +719,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/cage/proc/insert_action(mob/living/carbon/target)
 	if(!prisoner_insertion_check(target))
-			return FALSE
+		return FALSE
 	//since we are only using change_state here and in processing, might as well do it here
 	if(!button)
 		for(var/datum/action/innate/mecha/select_module/H in chassis.occupant.actions)
