@@ -574,26 +574,31 @@ so as to remain in compliance with the most up-to-date laws."
 	name = "You shouldn't see this"
 	desc = "This as well"
 	icon = 'icons/obj/mecha/mecha_cage.dmi'
+	var/stage_define
 
 /atom/movable/screen/alert/mech_cage/zero
 	name = "Stage Zero"
 	desc = "You are currently not doing anything."
 	icon_state = "stage_0"
+	stage_define = CAGE_STAGE_ZERO
 
 /atom/movable/screen/alert/mech_cage/one
 	name = "Stage One"
 	desc = "You are currently supressing someone."
 	icon_state = "stage_1"
+	stage_define = CAGE_STAGE_ONE
 
 /atom/movable/screen/alert/mech_cage/two
 	name = "Stage Two"
 	desc = "You are currently supressing someone handcuffed."
 	icon_state = "stage_2"
+	stage_define = CAGE_STAGE_TWO
 
 /atom/movable/screen/alert/mech_cage/three
 	name = "Stage Three"
-	desc = "You are currently having someone inside the containment chamber."
+	desc = "You currently have someone inside the containment chamber."
 	icon_state = "stage_3"
+	stage_define = CAGE_STAGE_THREE
 
 //GUARDIANS
 /atom/movable/screen/alert/cancharge

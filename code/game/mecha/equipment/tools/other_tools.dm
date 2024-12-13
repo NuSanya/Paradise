@@ -609,10 +609,10 @@
 	var/mob/living/carbon/prisoner
 	var/mob/living/carbon/holding
 	var/turf/holding_turf
-	/// for custom icons
+	///for custom icons
 	var/datum/action/innate/mecha/select_module/button
-	/// wacky case
-	var/current_alert
+	///wacky case
+	var/current_stage
 	var/obj/effect/supress/supress_effect
 
 /obj/item/mecha_parts/mecha_equipment/cage/can_attach(obj/mecha/M)
@@ -643,14 +643,14 @@
 	. = ..()
 	if(!.)
 		if(prisoner)
-			change_alert("three")
+			change_alert(CAGE_STAGE_THREE)
 		else if(holding)
 			if(!holding.handcuffed)
-				change_alert("one")
+				change_alert(CAGE_STAGE_ONE)
 			else
-				change_alert("two")
+				change_alert(CAGE_STAGE_TWO)
 		else
-			change_alert("zero")
+			change_alert(CAGE_STAGE_ZERO)
 
 /obj/item/mecha_parts/mecha_equipment/cage/action(mob/living/carbon/target)
 	if(!action_checks(target))
@@ -690,7 +690,7 @@
 			supress_effect = null
 			return FALSE
 		if(!prisoner)
-			change_alert("one")
+			change_alert(CAGE_STAGE_ONE)
 		supress(target)
 	else
 		occupant_message(span_notice("You start supressing [target]..."))
@@ -702,7 +702,7 @@
 			supress_effect = null
 			return FALSE
 		if(!prisoner)
-			change_alert("one")
+			change_alert(CAGE_STAGE_ONE)
 		supress(target)
 
 /obj/item/mecha_parts/mecha_equipment/cage/proc/handcuff_action(mob/living/carbon/target)
@@ -711,7 +711,7 @@
 	if(!do_after_cooldown(target))
 		return FALSE
 	if(!prisoner)
-		change_alert("two")
+		change_alert(CAGE_STAGE_TWO)
 	target.apply_restraints(new /obj/item/restraints/handcuffs, ITEM_SLOT_HANDCUFFED, TRUE)
 	occupant_message(span_notice("You successfully cuff [target]..."))
 	chassis.visible_message(span_warning("[chassis] successfully cuffed [target]."))
@@ -734,10 +734,10 @@
 		change_state("mecha_cage")
 		return FALSE
 	change_state("mecha_cage_activated")
-	change_alert("three")
+	change_alert(CAGE_STAGE_THREE)
+	stop_supressing(target)
 	target.forceMove(src)
 	prisoner = target
-	stop_supressing(target)
 	update_equip_info()
 	occupant_message(span_notice("[target] successfully loaded into [src]."))
 	chassis.visible_message(span_warning("[chassis] loads [target] into [src]."))
@@ -759,30 +759,27 @@
 	supress_effect = null
 
 	if(!prisoner)
-		change_alert("zero")
+		change_alert(CAGE_STAGE_ZERO)
 
 /obj/item/mecha_parts/mecha_equipment/cage/proc/change_state(icon)
 	button.button_icon_state = icon
 	button.UpdateButtonIcon()
 
-/obj/item/mecha_parts/mecha_equipment/cage/proc/change_alert(var/stage_number) //zero, one, two, three in string
+/obj/item/mecha_parts/mecha_equipment/cage/proc/change_alert(var/stage_define)
 	var/mob/living/carbon/H = chassis.occupant
-	switch(stage_number)
-		if("zero")
-			H.throw_alert(alert_category, /atom/movable/screen/alert/mech_cage/zero)
-		if("one")
-			H.throw_alert(alert_category, /atom/movable/screen/alert/mech_cage/one)
-		if("two")
-			H.throw_alert(alert_category, /atom/movable/screen/alert/mech_cage/two)
-		if("three")
-			H.throw_alert(alert_category, /atom/movable/screen/alert/mech_cage/three)
-
-	current_alert = stage_number
+	for(var/I in subtypesof(/atom/movable/screen/alert/mech_cage))
+		var/atom/movable/screen/alert/mech_cage/alert = I
+		if(alert.stage_define == stage_define)
+			H.throw_alert(alert_category, alert)
+			break
+			
+	current_stage = stage_define
 
 
 /obj/item/mecha_parts/mecha_equipment/cage/proc/set_supress_effect(mob/living/carbon/target)
 	supress_effect = new(target.loc)
 	flick("applying", supress_effect)
+
 /obj/item/mecha_parts/mecha_equipment/cage/proc/prisoner_insertion_check(mob/living/carbon/target)
 	if(target.buckled)
 		occupant_message(span_warning("[target] will not fit into the cage because [target.p_they()] [target.p_are()] buckled to [target.buckled]!"))
@@ -855,19 +852,19 @@
 		if(prisoner)
 			if(!istype(prisoner.loc, src))
 				prisoner = null
-		else if(current_alert == "three")
+		else if(current_stage == CAGE_STAGE_THREE)
 			if(holding.handcuffed)
-				change_alert("two")
+				change_alert(CAGE_STAGE_TWO)
 			else
-				change_alert("one")
+				change_alert(CAGE_STAGE_ONE)
 		else if(button)
 			if(button.button_icon_state == "mecha_cage_activated")
 				change_state("mecha_cage")
 
 	else
 		if(chassis.occupant)
-			if(current_alert != "zero" && chassis.selected == src)
-				change_alert("zero")
+			if(current_stage != CAGE_STAGE_ZERO && chassis.selected == src)
+				change_alert(CAGE_STAGE_ZERO)
 		if(button)
 			if(button.button_icon_state == "mecha_cage_activated")
 				change_state("mecha_cage")
