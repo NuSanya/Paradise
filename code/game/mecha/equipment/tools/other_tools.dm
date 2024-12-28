@@ -608,7 +608,6 @@
 
 	var/mob/living/carbon/prisoner
 	var/mob/living/carbon/holding
-	var/turf/holding_turf
 	///for custom icons
 	var/datum/action/innate/mecha/select_module/button
 	///wacky case
@@ -625,18 +624,14 @@
 			return TRUE
 	return FALSE
 
-/obj/item/mecha_parts/mecha_equipment/cage/attach_act(obj/mecha/M)
-	START_PROCESSING(SSobj, src)
-
 /obj/item/mecha_parts/mecha_equipment/cage/Destroy()
 	for(var/atom/movable/AM in src)
 		AM.forceMove(get_turf(src))
 		if(holding)
 			stop_supressing(holding)
-			
+
 	prisoner = null
 	holding = null
-	holding_turf = null
 	return ..()
 
 /obj/item/mecha_parts/mecha_equipment/cage/select_set_alert()
@@ -680,10 +675,10 @@
 	return FALSE
 
 /obj/item/mecha_parts/mecha_equipment/cage/proc/supress_action(mob/living/carbon/target)
-	if(!holding)
+	if(holding)
 		occupant_message(span_notice("You stop supressing [holding], and start supressing [target]..."))
 		chassis.visible_message(span_warning("[chassis] stops supressing [holding] and switches to [target]."))
-		stop_supressing(holding, FALSE)
+		stop_supressing(holding)
 		set_supress_effect(target)
 		if(!do_after_cooldown(target))
 			qdel(supress_effect)
@@ -720,7 +715,6 @@
 /obj/item/mecha_parts/mecha_equipment/cage/proc/insert_action(mob/living/carbon/target)
 	if(!prisoner_insertion_check(target))
 		return FALSE
-	//since we are only using change_state here and in processing, might as well do it here
 	if(!button)
 		for(var/datum/action/innate/mecha/select_module/H in chassis.occupant.actions)
 			if(H.button_icon_state == "mecha_cage")
@@ -728,31 +722,33 @@
 				break
 
 	change_state("mecha_cage_activate")
-	occupant_message(span_notice("Yoeu start putting [target] into the containment chamber..."))
+	occupant_message(span_notice("You start putting [target] into the containment chamber..."))
 	chassis.visible_message(span_warning("[chassis] is putting [target] into the containment chamber."))
 	if(!do_after_cooldown(target))
 		change_state("mecha_cage")
 		return FALSE
 	change_state("mecha_cage_activated")
 	change_alert(CAGE_STAGE_THREE)
-	stop_supressing(target)
-	target.forceMove(src)
 	prisoner = target
+	target.forceMove(src)
+	stop_supressing(target)
+	UnregisterSignal(target, COMSIG_MOVABLE_MOVED)
+	RegisterSignal(target, COMSIG_MOVABLE_MOVED, PROC_REF(on_escape))
 	update_equip_info()
 	occupant_message(span_notice("[target] successfully loaded into [src]."))
 	chassis.visible_message(span_warning("[chassis] loads [target] into [src]."))
 	log_message("[target] loaded.")
 
 /obj/item/mecha_parts/mecha_equipment/cage/proc/supress(mob/living/carbon/target)
+	RegisterSignal(target, COMSIG_MOVABLE_MOVED, PROC_REF(on_moved))
 	holding = target
-	holding_turf = get_turf(holding)
 	target.add_traits(list(TRAIT_IMMOBILIZED, TRAIT_FLOORED), MECH_SUPRESSED_TRAIT)
 	target.move_resist = MOVE_FORCE_STRONG
 	supress_effect.icon_state = "applied"
 
-/obj/item/mecha_parts/mecha_equipment/cage/proc/stop_supressing(mob/living/carbon/target, var/alert = TRUE)
+/obj/item/mecha_parts/mecha_equipment/cage/proc/stop_supressing(mob/living/carbon/target)
+	UnregisterSignal(target, COMSIG_MOVABLE_MOVED)
 	holding = null
-	holding_turf = null
 	target.remove_traits(list(TRAIT_IMMOBILIZED, TRAIT_FLOORED), MECH_SUPRESSED_TRAIT)
 	target.move_resist = MOVE_FORCE_DEFAULT
 	qdel(supress_effect)
@@ -761,8 +757,29 @@
 	if(!prisoner)
 		change_alert(CAGE_STAGE_ZERO)
 
+/obj/item/mecha_parts/mecha_equipment/cage/proc/on_moved(mob/living/carbon/target)
+	SIGNAL_HANDLER
+	stop_supressing(target)
+
+/obj/item/mecha_parts/mecha_equipment/cage/proc/on_escape(mob/living/carbon/target)
+	SIGNAL_HANDLER
+	occupant_message("[prisoner] escaped.")
+	log_message("[prisoner] escaped.")
+	prisoner = null
+	if(holding)
+		if(holding.handcuffed)
+			change_alert(CAGE_STAGE_TWO)
+		else
+			change_alert(CAGE_STAGE_ONE)
+	else
+		change_alert(CAGE_STAGE_ZERO)
+	change_state("mecha_cage")
+	update_equip_info()
+	UnregisterSignal(target, COMSIG_MOVABLE_MOVED)
+
 /obj/item/mecha_parts/mecha_equipment/cage/proc/change_state(icon)
 	button.button_icon_state = icon
+	flick(icon, button)
 	button.UpdateButtonIcon()
 
 /obj/item/mecha_parts/mecha_equipment/cage/proc/change_alert(var/stage_define)
@@ -772,13 +789,13 @@
 		if(alert.stage_define == stage_define)
 			H.throw_alert(alert_category, alert)
 			break
-			
+
 	current_stage = stage_define
 
 
 /obj/item/mecha_parts/mecha_equipment/cage/proc/set_supress_effect(mob/living/carbon/target)
 	supress_effect = new(target.loc)
-	flick("applying", supress_effect)
+	flick("effect_on_doll", supress_effect)
 
 /obj/item/mecha_parts/mecha_equipment/cage/proc/prisoner_insertion_check(mob/living/carbon/target)
 	if(target.buckled)
@@ -797,6 +814,14 @@
 		return FALSE
 	if(!prisoner)
 		return FALSE
+	if(holding)
+		if(holding.handcuffed)
+			change_alert(CAGE_STAGE_TWO)
+		else
+			change_alert(CAGE_STAGE_ONE)
+	else
+		change_alert(CAGE_STAGE_ZERO)
+	UnregisterSignal(prisoner, COMSIG_MOVABLE_MOVED)
 	prisoner.forceMove(get_turf(src))
 	if(!force)
 		occupant_message("[prisoner] ejected.")
@@ -805,6 +830,7 @@
 		occupant_message("[prisoner] escaped.")
 		log_message("[prisoner] escaped.")
 	prisoner = null
+	change_state("mecha_cage")
 	update_equip_info()
 
 /obj/item/mecha_parts/mecha_equipment/cage/can_detach()
@@ -814,7 +840,6 @@
 	return TRUE
 
 /obj/item/mecha_parts/mecha_equipment/cage/detach_act()
-	STOP_PROCESSING(SSobj, src)
 	button = null
 
 /obj/item/mecha_parts/mecha_equipment/cage/get_module_equip_info()
@@ -839,42 +864,11 @@
 	if(do_after(prisoner, 30 SECONDS, prisoner))
 		eject(TRUE)
 
-/obj/item/mecha_parts/mecha_equipment/cage/process()
-	if(holding || prisoner)
-		if(holding)
-			var/turf/actual_turf = get_turf(holding)
-			if(actual_turf != holding_turf)
-				stop_supressing(holding)
-				actual_turf = null
-			if(chassis.occupant == null)
-				stop_supressing(holding)
-
-		if(prisoner)
-			if(!istype(prisoner.loc, src))
-				prisoner = null
-		else if(current_stage == CAGE_STAGE_THREE)
-			if(holding.handcuffed)
-				change_alert(CAGE_STAGE_TWO)
-			else
-				change_alert(CAGE_STAGE_ONE)
-		else if(button)
-			if(button.button_icon_state == "mecha_cage_activated")
-				change_state("mecha_cage")
-
-	else
-		if(chassis.occupant)
-			if(current_stage != CAGE_STAGE_ZERO && chassis.selected == src)
-				change_alert(CAGE_STAGE_ZERO)
-		if(button)
-			if(button.button_icon_state == "mecha_cage_activated")
-				change_state("mecha_cage")
-
-
 /obj/effect/supress
 	name = "Mech claws"
 	desc = "Looks like someone is getting taken hostage..."
 	icon = 'icons/misc/supress_effect.dmi'
-	icon_state = "applied"
+	icon_state = "effect_on_doll"
 	anchored = TRUE
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	plane = ABOVE_GAME_PLANE
