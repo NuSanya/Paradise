@@ -595,8 +595,8 @@
 // SCS-3 CAGE
 
 /obj/item/mecha_parts/mecha_equipment/cage
-	name = "SCS 3 Cage"
-	desc = "An exosuit module for containing lawbreakers, or hostages."
+	name = "Клетка SCS-3"
+	desc = "Модуль для экзокостюмов, используемый в задержании преступников."
 	icon_state = "mecha_cage"
 	origin_tech = "combat=6;materials=5"
 	equip_cooldown = 3 SECONDS
@@ -671,13 +671,13 @@
 		insert_action(target)
 		return TRUE
 
-	occupant_message(span_notice("[target] can't be suppressed, since [target] is not in critical condition"))
+	occupant_message(span_notice("[target] не может быть удержа[genderize_ru(target.gender, "н", "на", "но", "ны")], так как [target] не находится в критическом состоянии"))
 	return FALSE
 
 /obj/item/mecha_parts/mecha_equipment/cage/proc/supress_action(mob/living/carbon/target)
 	if(holding)
-		occupant_message(span_notice("You stop supressing [holding], and start supressing [target]..."))
-		chassis.visible_message(span_warning("[chassis] stops supressing [holding] and switches to [target]."))
+		occupant_message(span_notice("Ты перестаёшь удерживать [holding], и начинаешь удерживать [target]..."))
+		chassis.visible_message(span_warning("[chassis] перестаёт удерживать [holding] и сменяется на [target]."))
 		stop_supressing(holding)
 		set_supress_effect(target)
 		if(!do_after_cooldown(target))
@@ -688,8 +688,8 @@
 			change_alert(CAGE_STAGE_ONE)
 		supress(target)
 	else
-		occupant_message(span_notice("You start supressing [target]..."))
-		chassis.visible_message(span_warning("[chassis] starts supressing [target]."))
+		occupant_message(span_notice("Ты начинаешь удерживать [target]..."))
+		chassis.visible_message(span_warning("[chassis] начинает удерживать [target]."))
 		supress_effect = new(target.loc)
 		set_supress_effect(target)
 		if(!do_after_cooldown(target))
@@ -701,15 +701,15 @@
 		supress(target)
 
 /obj/item/mecha_parts/mecha_equipment/cage/proc/handcuff_action(mob/living/carbon/target)
-	occupant_message(span_notice("You start cuffing [target]..."))
-	chassis.visible_message(span_warning("[chassis] starts cuffing [target]."))
+	occupant_message(span_notice("Ты начинаешь сковывать [target]..."))
+	chassis.visible_message(span_warning("[chassis] начинает сковывать [target]."))
 	if(!do_after_cooldown(target))
 		return FALSE
 	if(!prisoner)
 		change_alert(CAGE_STAGE_TWO)
 	target.apply_restraints(new /obj/item/restraints/handcuffs, ITEM_SLOT_HANDCUFFED, TRUE)
-	occupant_message(span_notice("You successfully cuff [target]..."))
-	chassis.visible_message(span_warning("[chassis] successfully cuffed [target]."))
+	occupant_message(span_notice("Ты успешно сковал [target]..."))
+	chassis.visible_message(span_warning("[chassis] успешно сковал [target]."))
 	add_attack_logs(chassis.occupant, target, "shackled")
 
 /obj/item/mecha_parts/mecha_equipment/cage/proc/insert_action(mob/living/carbon/target)
@@ -722,8 +722,8 @@
 				break
 
 	change_state("mecha_cage_activate")
-	occupant_message(span_notice("You start putting [target] into the containment chamber..."))
-	chassis.visible_message(span_warning("[chassis] is putting [target] into the containment chamber."))
+	occupant_message(span_notice("Ты начинаешь помещать [target] внутрь клетки..."))
+	chassis.visible_message(span_warning("[chassis] начинает помещать [target] внутрь клетки."))
 	if(!do_after_cooldown(target))
 		change_state("mecha_cage")
 		return FALSE
@@ -735,8 +735,8 @@
 	UnregisterSignal(target, COMSIG_MOVABLE_MOVED)
 	RegisterSignal(target, COMSIG_MOVABLE_MOVED, PROC_REF(on_escape))
 	update_equip_info()
-	occupant_message(span_notice("[target] successfully loaded into [src]."))
-	chassis.visible_message(span_warning("[chassis] loads [target] into [src]."))
+	occupant_message(span_notice("[target] успешно загруже[genderize_ru(target.gender, "н", "на", "но", "ны")]."))
+	chassis.visible_message(span_warning("[chassis] загружает [target] в клетку."))
 	log_message("[target] loaded.")
 
 /obj/item/mecha_parts/mecha_equipment/cage/proc/supress(mob/living/carbon/target)
@@ -763,8 +763,8 @@
 
 /obj/item/mecha_parts/mecha_equipment/cage/proc/on_escape(mob/living/carbon/target)
 	SIGNAL_HANDLER
-	occupant_message("[prisoner] escaped.")
-	log_message("[prisoner] escaped.")
+	occupant_message("[prisoner] сбежа[genderize_ru(target.gender, "л", "ла", "ло", "лы")].")
+	log_message("[prisoner] сбежа[genderize_ru(target.gender, "л", "ла", "ло", "лы")].")
 	prisoner = null
 	if(holding)
 		if(holding.handcuffed)
@@ -799,13 +799,13 @@
 
 /obj/item/mecha_parts/mecha_equipment/cage/proc/prisoner_insertion_check(mob/living/carbon/target)
 	if(target.buckled)
-		occupant_message(span_warning("[target] will not fit into the cage because [target.p_they()] [target.p_are()] buckled to [target.buckled]!"))
+		occupant_message(span_warning("[target] не помест[pluralize_ru(target.gender, "ится", "ятся")] в клетку, так как [target] прикова[genderize_ru(target.gender, "н", "нна", "нно", "нны")] к [target.buckled]!"))
 		return FALSE
 	if(target.has_buckled_mobs())
-		occupant_message(span_warning("[target] will not fit into the cage because of the creatures attached to it!"))
+		occupant_message(span_warning("[target] не помест[pluralize_ru(target.gender, "ится", "ятся")] в клетку из-за прикованных к [genderize_ru(target.gender, "нему", "ней", "нему", "ним")] животным!"))
 		return FALSE
 	if(prisoner)
-		occupant_message(span_warning("The cage is already occupied!"))
+		occupant_message(span_warning("Клетка уже занята!"))
 		return FALSE
 	return TRUE
 
@@ -824,18 +824,18 @@
 	UnregisterSignal(prisoner, COMSIG_MOVABLE_MOVED)
 	prisoner.forceMove(get_turf(src))
 	if(!force)
-		occupant_message("[prisoner] ejected.")
-		log_message("[prisoner] ejected.")
+		occupant_message("[prisoner] извлеч[genderize_ru(prisoner.gender, "ён", "ена", "ено", "ены")].")
+		log_message("[prisoner] извлеч[genderize_ru(prisoner.gender, "ён", "ена", "ено", "ены")].")
 	else
-		occupant_message("[prisoner] escaped.")
-		log_message("[prisoner] escaped.")
+		occupant_message("[prisoner] сбежа[genderize_ru(prisoner.gender, "л", "ла", "ло", "ли")].")
+		log_message("[prisoner] сбежа[genderize_ru(prisoner.gender, "л", "ла", "ло", "ли")].")
 	prisoner = null
 	change_state("mecha_cage")
 	update_equip_info()
 
 /obj/item/mecha_parts/mecha_equipment/cage/can_detach()
 	if(prisoner || holding)
-		occupant_message(span_warning("Unable to detach [src] - equipment occupied!"))
+		occupant_message(span_warning("Невозможно отсоединить [src] - модуль работает!"))
 		return FALSE
 	return TRUE
 
@@ -844,7 +844,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/cage/get_module_equip_info()
 	if(prisoner)
-		return " <br />\[Occupant: [prisoner] \]<br /><a href='byond://?src=[UID()];eject=1'>Eject</a>"
+		return " <br />\[Задержанн[genderize_ru(prisoner.gender, "ый", "ая", "ое", "ые")]: [prisoner] \]<br /><a href='byond://?src=[UID()];eject=1'>Eject</a>"
 
 /obj/item/mecha_parts/mecha_equipment/cage/Topic(href,href_list)
 	..()
@@ -865,8 +865,8 @@
 		eject(TRUE)
 
 /obj/effect/supress
-	name = "Mech claws"
-	desc = "Looks like someone is getting taken hostage..."
+	name = "Клешни экзокостюма"
+	desc = "Сейчас кого-то своруют..."
 	icon = 'icons/misc/supress_effect.dmi'
 	icon_state = "effect_on_doll"
 	anchored = TRUE
