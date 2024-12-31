@@ -246,7 +246,7 @@
 	if(alert_category == "mecha_module")
 		var/atom/movable/screen/alert/empty_alert/default_alert = occupant.throw_alert(alert_category, /atom/movable/screen/alert/empty_alert, new_master = src)
 		default_alert.name = name
-		default_alert.desc = "You currently have [src.name] module selected"
+		default_alert.desc = "Выбран модуль [src.name]"
 		return TRUE
 	return FALSE
 
