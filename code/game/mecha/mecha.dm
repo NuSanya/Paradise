@@ -413,7 +413,7 @@
 	if(locate(/obj/item/mecha_parts/mecha_equipment/cage) in equipment)
 		var/obj/item/mecha_parts/mecha_equipment/cage/H = locate(/obj/item/mecha_parts/mecha_equipment/cage) in equipment
 		if(H.holding)
-			occupant_message(span_notice("You stop supressing [H.holding]."))
+			occupant_message(span_notice("Ты перестаёшь удерживать [H.holding]."))
 			H.stop_supressing(H.holding)
 
 	//Turns strafe OFF if not enough energy to step (with actuator module only)
@@ -1174,7 +1174,7 @@
 	if(selected)
 		var/atom/movable/screen/alert/empty_alert/default_alert = AI.throw_alert(selected.alert_category, /atom/movable/screen/alert/empty_alert, new_master = selected)
 		default_alert.name = selected.name
-		default_alert.desc = "You currently have [selected.name] module selected"
+		default_alert.desc = "Выбран модуль [selected.name]"
 
 /////////////////////////////////////
 ////////  Atmospheric stuff  ////////
