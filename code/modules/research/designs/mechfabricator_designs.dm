@@ -1048,8 +1048,8 @@
 	category = list("Exosuit Equipment")
 
 /datum/design/mech_cage
-	name = "SCS 3 Cage"
-	desc = "Exosuit-mounted security containing system."
+	name = "Клетка SCS-3"
+	desc = "Модуль для экзокостюмов, используемый для задержания и заключения преступников."
 	id = "mech_cage"
 	build_type = MECHFAB
 	req_tech = (list("materials" = 7, "combat" = 7))
