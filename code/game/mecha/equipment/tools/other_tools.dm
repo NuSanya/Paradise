@@ -807,7 +807,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/cage/proc/prisoner_insertion_check(mob/living/carbon/target)
 	if(target.buckled)
-		occupant_message(span_warning("[target] не помест[pluralize_ru(target.gender, "ится", "ятся")] в клетку, так как [target] прикова[genderize_ru(target.gender, "н", "нна", "нно", "нны")] к [target.buckled]!"))
+		occupant_message(span_warning("[target] не помест[pluralize_ru(target.gender, "ит", "ят")]ся в клетку, так как [target] прикова[genderize_ru(target.gender, "н", "на", "но", "ны")] к [target.buckled.declent_ru(DATIVE)]!"))
 		return FALSE
 	if(target.has_buckled_mobs())
 		occupant_message(span_warning("[target] не помест[pluralize_ru(target.gender, "ится", "ятся")] в клетку из-за прикованных к [genderize_ru(target.gender, "нему", "ней", "нему", "ним")] животным!"))
