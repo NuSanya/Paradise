@@ -685,7 +685,7 @@
 /obj/item/mecha_parts/mecha_equipment/cage/proc/supress_action(mob/living/carbon/target)
 	if(holding)
 		occupant_message(span_notice("Ты перестаёшь удерживать [holding], и начинаешь удерживать [target]..."))
-		chassis.visible_message(span_warning("[chassis] перестаёт удерживать [holding] и сменяется на [target]."))
+		chassis.visible_message(span_warning("[capitalize(chassis.declent_ru(NOMINATIVE))] перестаёт удерживать [holding] и начинает удерживать [target]."))
 		stop_supressing(holding)
 		set_supress_effect(target)
 		if(!do_after_cooldown(target))
