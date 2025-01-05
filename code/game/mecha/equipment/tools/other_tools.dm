@@ -743,7 +743,7 @@
 	UnregisterSignal(target, COMSIG_MOVABLE_MOVED)
 	RegisterSignal(target, COMSIG_MOVABLE_MOVED, PROC_REF(on_escape))
 	update_equip_info()
-	occupant_message(span_notice("[target] успешно загруже[genderize_ru(target.gender, "н", "на", "но", "ны")]."))
+	occupant_message(span_notice("[target] успешно помещ[genderize_ru(target.gender, "ён", "ена", "ено", "ены")] в клетку."))
 	chassis.visible_message(span_warning("[chassis] загружает [target] в клетку."))
 	log_message("[target] loaded.")
 
