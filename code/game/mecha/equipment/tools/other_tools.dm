@@ -595,7 +595,7 @@
 // SCS-3 CAGE
 
 /obj/item/mecha_parts/mecha_equipment/cage
-	name = "Клетка SCS-3"
+	name = "SCS 3 Cage"
 	desc = "Модуль для экзокостюмов, используемый для задержании преступников."
 	ru_names = list(
 	    NOMINATIVE = "модуль \"Клетка SCS-3\"",
@@ -684,7 +684,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/cage/proc/supress_action(mob/living/carbon/target)
 	if(holding)
-		occupant_message(span_notice("Ты перестаёшь удерживать [holding], и начинаешь удерживать [target]..."))
+		occupant_message(span_notice("Вы перестаёте удерживать [holding], и начинаете удерживать [target]..."))
 		chassis.visible_message(span_warning("[capitalize(chassis.declent_ru(NOMINATIVE))] перестаёт удерживать [holding] и начинает удерживать [target]."))
 		stop_supressing(holding)
 		set_supress_effect(target)
