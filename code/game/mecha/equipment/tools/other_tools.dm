@@ -595,8 +595,16 @@
 // SCS-3 CAGE
 
 /obj/item/mecha_parts/mecha_equipment/cage
-	name = "SCS 3 Cage"
-	desc = "Модуль для экзокостюмов, используемый в задержании преступников."
+	name = "Клетка SCS-3"
+	desc = "Модуль для экзокостюмов, используемый для задержании преступников."
+	ru_names = list(
+	    NOMINATIVE = "модуль \"Клетка SCS-3\"",
+	    GENITIVE = "модуля \"Клетка SCS-3\"",
+	    DATIVE = "модулю \"Клетка SCS-3\"",
+	    ACCUSATIVE = "модуль \"Клетка SCS-3\"",
+	    INSTRUMENTAL = "модулем \"Клетка SCS-3\"",
+	    PREPOSITIONAL = "модулю \"Клетка SCS-3\""
+	)
 	icon_state = "mecha_cage"
 	origin_tech = "combat=6;materials=5"
 	equip_cooldown = 3 SECONDS
@@ -671,13 +679,13 @@
 		insert_action(target)
 		return TRUE
 
-	occupant_message(span_notice("[target] не может быть удержа[genderize_ru(target.gender, "н", "на", "но", "ны")], так как [target] не находится в критическом состоянии"))
+	occupant_message(span_notice("[target] не может быть удержа[genderize_ru(target.gender, "н", "на", "но", "ны")], так как [target] не наход[pluralize_ru(targer.gender, "ит", "ят")]ся в критическом состоянии."))
 	return FALSE
 
 /obj/item/mecha_parts/mecha_equipment/cage/proc/supress_action(mob/living/carbon/target)
 	if(holding)
-		occupant_message(span_notice("Вы перестаёте удерживать [holding], и начинаете удерживать [target]..."))
-		chassis.visible_message(span_warning("[chassis] перестаёт удерживать [holding] и сменяется на [target]."))
+		occupant_message(span_notice("Ты перестаёшь удерживать [holding], и начинаешь удерживать [target]..."))
+		chassis.visible_message(span_warning("[capitalize(chassis.declent_ru(NOMINATIVE))] перестаёт удерживать [holding] и начинает удерживать [target]."))
 		stop_supressing(holding)
 		set_supress_effect(target)
 		if(!do_after_cooldown(target))
@@ -735,7 +743,7 @@
 	UnregisterSignal(target, COMSIG_MOVABLE_MOVED)
 	RegisterSignal(target, COMSIG_MOVABLE_MOVED, PROC_REF(on_escape))
 	update_equip_info()
-	occupant_message(span_notice("[target] успешно загруже[genderize_ru(target.gender, "н", "на", "но", "ны")]."))
+	occupant_message(span_notice("[target] успешно помещ[genderize_ru(target.gender, "ён", "ена", "ено", "ены")] в клетку."))
 	chassis.visible_message(span_warning("[chassis] загружает [target] в клетку."))
 	log_message("[target] loaded.")
 
@@ -799,7 +807,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/cage/proc/prisoner_insertion_check(mob/living/carbon/target)
 	if(target.buckled)
-		occupant_message(span_warning("[target] не помест[pluralize_ru(target.gender, "ится", "ятся")] в клетку, так как [target] прикова[genderize_ru(target.gender, "н", "нна", "нно", "нны")] к [target.buckled]!"))
+		occupant_message(span_warning("[target] не помест[pluralize_ru(target.gender, "ит", "ят")]ся в клетку, так как [target] прикова[genderize_ru(target.gender, "н", "на", "но", "ны")] к [target.buckled.declent_ru(DATIVE)]!"))
 		return FALSE
 	if(target.has_buckled_mobs())
 		occupant_message(span_warning("[target] не помест[pluralize_ru(target.gender, "ится", "ятся")] в клетку из-за слизня, обволакивающего [[genderize_ru(target.gender, "его", "её", "его", "их")]]!"))
@@ -835,7 +843,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/cage/can_detach()
 	if(prisoner || holding)
-		occupant_message(span_warning("Невозможно отсоединить [src] - модуль работает!"))
+		occupant_message(span_warning("Невозможно отсоединить [declent_ru(ACCUSATIVE)] - модуль работает!"))
 		return FALSE
 	return TRUE
 
