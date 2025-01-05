@@ -843,7 +843,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/cage/can_detach()
 	if(prisoner || holding)
-		occupant_message(span_warning("Невозможно отсоединить [src] - модуль работает!"))
+		occupant_message(span_warning("Невозможно отсоединить [declent_ru(ACCUSATIVE)] - модуль работает!"))
 		return FALSE
 	return TRUE
 
