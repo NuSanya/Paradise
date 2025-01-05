@@ -679,7 +679,7 @@
 		insert_action(target)
 		return TRUE
 
-	occupant_message(span_notice("[target] не может быть удержа[genderize_ru(target.gender, "н", "на", "но", "ны")], так как [target] не находится в критическом состоянии"))
+	occupant_message(span_notice("[target] не может быть удержа[genderize_ru(target.gender, "н", "на", "но", "ны")], так как [target] не наход[pluralize_ru(targer.gender, "ит", "ят")]ся в критическом состоянии."))
 	return FALSE
 
 /obj/item/mecha_parts/mecha_equipment/cage/proc/supress_action(mob/living/carbon/target)
