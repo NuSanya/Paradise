@@ -596,7 +596,15 @@
 
 /obj/item/mecha_parts/mecha_equipment/cage
 	name = "Клетка SCS-3"
-	desc = "Модуль для экзокостюмов, используемый в задержании преступников."
+	desc = "Модуль для экзокостюмов, используемый для задержании преступников."
+	ru_names = list(
+	    NOMINATIVE = "модуль \"Клетка SCS-3\"",
+	    GENITIVE = "модуля \"Клетка SCS-3\"", 
+	    DATIVE = "модулю \"Клетка SCS-3\"", 
+	    ACCUSATIVE = "модуль \"Клетка SCS-3\"", 
+	    INSTRUMENTAL = "модулем \"Клетка SCS-3\"", 
+	    PREPOSITIONAL = "модулю \"Клетка SCS-3\""
+	)
 	icon_state = "mecha_cage"
 	origin_tech = "combat=6;materials=5"
 	equip_cooldown = 3 SECONDS
