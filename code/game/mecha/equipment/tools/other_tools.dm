@@ -679,7 +679,7 @@
 		insert_action(target)
 		return TRUE
 
-	occupant_message(span_notice("[target] не может быть удержа[genderize_ru(target.gender, "н", "на", "но", "ны")], так как [target] не наход[pluralize_ru(targer.gender, "ит", "ят")]ся в критическом состоянии."))
+	occupant_message(span_notice("[target] не может быть удержа[genderize_ru(target.gender, "н", "на", "но", "ны")], так как [target] не наход[pluralize_ru(target.gender, "ит", "ят")]ся в критическом состоянии."))
 	return FALSE
 
 /obj/item/mecha_parts/mecha_equipment/cage/proc/supress_action(mob/living/carbon/target)
@@ -697,7 +697,7 @@
 		supress(target)
 	else
 		occupant_message(span_notice("Вы начинаете удерживать [target]..."))
-		chassis.visible_message(span_warning("[chassis] начинает удерживать [target]."))
+		chassis.visible_message(span_warning(span_warning("[capitalize(chassis.declent_ru(NOMINATIVE))] начинает удерживать [target].")))
 		supress_effect = new(target.loc)
 		set_supress_effect(target)
 		if(!do_after_cooldown(target))
@@ -810,7 +810,7 @@
 		occupant_message(span_warning("[target] не помест[pluralize_ru(target.gender, "ит", "ят")]ся в клетку, так как [target] прикова[genderize_ru(target.gender, "н", "на", "но", "ны")] к [target.buckled.declent_ru(DATIVE)]!"))
 		return FALSE
 	if(target.has_buckled_mobs())
-		occupant_message(span_warning("[target] не помест[pluralize_ru(target.gender, "ится", "ятся")] в клетку из-за слизня, обволакивающего [[genderize_ru(target.gender, "его", "её", "его", "их")]]!"))
+		occupant_message(span_warning("[target] не помест[pluralize_ru(target.gender, "ится", "ятся")] в клетку из-за слизня, обволакивающего [genderize_ru(target.gender, "его", "её", "его", "их")]!"))
 		return FALSE
 	if(prisoner)
 		occupant_message(span_warning("Клетка уже занята!"))
@@ -875,6 +875,14 @@
 /obj/effect/supress
 	name = "Mech claws"
 	desc = "Сейчас кого-то своруют..."
+	ru_names = list(
+	    NOMINATIVE = "Механические когти",
+	    GENITIVE = "Механических когтей",
+	    DATIVE = "Механическим когтям",
+	    ACCUSATIVE = "Механические когти",
+	    INSTRUMENTAL = "Механическими когтями",
+	    PREPOSITIONAL = "Механических когтях"
+	)
 	icon = 'icons/misc/supress_effect.dmi'
 	icon_state = "effect_on_doll"
 	anchored = TRUE
